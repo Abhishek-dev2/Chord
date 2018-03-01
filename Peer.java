@@ -13,14 +13,18 @@ public class Peer {
   static int myKey = 0;
   static String peerIPAdress = "";
   static int peerPort = 1025;
+  static int m = 5;
+  static int fingerTable[] = new int[m];
+  static int predecessor = -1;
+  static ArrayList<Integer> successor = new ArrayList<Integer>();
   public static void main(String[] args) throws Exception {
     turnServerOn();
     int key = ObtainSHA.SHA1(myIPAdress + ":" + myPort);
     System.out.println("key: " + key);
-    // int i = Integer.parseInt(key, 16);
-    // String bin = Integer.toBinaryString(i);
-    // System.out.println("key in binary: " + bin);
-    // createFingerTable();
+    createFingerTable();
+  }
+  private static void createFingerTable() {
+
   }
   private static void turnServerOn() throws Exception {
     Scanner sc = new Scanner(System.in);
