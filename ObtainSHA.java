@@ -26,7 +26,13 @@ public class ObtainSHA {
   }
   private static int convertToHex(byte[] data) {
     // Trancating here
-    return (data[0] >>> 5) & 00011111;
+    // System.out.println("data[0]: " + data[0]);
+    if(Peer.m == 5)
+      return (data[0] >>> Peer.m) & 0x1F;
+    else {
+      System.out.println("Change hexcode above since m != 5.");
+      return -1;
+    }
     // StringBuffer buf = new StringBuffer();
     // for (int i = 0; i < data.length; i++) {
     //   int halfbyte = (data[i] >>> 4) & 0x0F;
