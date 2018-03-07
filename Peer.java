@@ -159,12 +159,11 @@ public class Peer {
     os.flush();
     os.write((myKey + "\n").getBytes());
     os.flush();
-    String fileName = "";
-    do {
-      fileName = br.readLine();
+    String fileName = br.readLine();
+    while(!fileName.equals("#*#")) {
       File file = new File("./files/" + fileName);
       file.createNewFile();
-    } while(!fileName.equals("#*#"));
+    }
     os.close(); br.close(); getMyFilesServer.close();
   }
   private static boolean checkFileInMyFingerTable(int fileKey) throws Exception {
