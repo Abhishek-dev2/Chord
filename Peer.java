@@ -28,6 +28,7 @@ public class Peer {
       successorIPAdress[2] = temp[0]; successorPort[2] = Integer.parseInt(temp[1]);
       updateSuccessor();
       updatePredecessors();
+      getMyFiles();
     }
     Thread t2 = new MenuThread();
     t2.start();
@@ -43,6 +44,24 @@ public class Peer {
       String request = br.readLine();
       System.out.println("Query received: " + request);
       switch(request) {
+        case "giveMyFiles":
+          int yourKey = Integer.parseInt(br.readLine());
+          File[] listOfFiles = (new File("./files")).listFiles();
+          try {
+            for (int i = 0; i < listOfFiles.length; i++) {
+              int x = ObtainSHA.SHA1(listOfFiles[i].getName());
+              if(yourKey == RowInFingerTable.clockwiseClosest(x, yourKey, myKey)) {
+                os.write((listOfFiles[i].getName() + "\n").getBytes());
+                os.flush();
+                listOfFiles[i].delete();
+              }
+            }
+          } catch(Exception ex) {
+            ex.printStackTrace();
+          }
+          os.write("#*#\n".getBytes());
+          os.flush();
+          break;
         case "SendFileAddress":
           int fileKey = Integer.parseInt(br.readLine());
           if(checkFileInMyFingerTable(fileKey)) {
@@ -131,6 +150,23 @@ public class Peer {
       connectionSocket.close();
     }
   }
+  private static void getMyFiles() throws Exception {
+    Socket getMyFilesServer = new Socket(InetAddress.getByName(successorIPAdress[0]), successorPort[0]);
+    System.out.println("XXXXXXXXXXXXX getMyFiles() XXXXXXXXXXXXX");
+    BufferedReader br = new BufferedReader(new InputStreamReader(getMyFilesServer.getInputStream()));
+    OutputStream os = getMyFilesServer.getOutputStream();
+    os.write("giveMyFiles\n".getBytes());
+    os.flush();
+    os.write((myKey + "\n").getBytes());
+    os.flush();
+    String fileName = "";
+    do {
+      fileName = br.readLine();
+      File file = new File("./files/" + fileName);
+      file.createNewFile();
+    } while(!fileName.equals("#*#"));
+    os.close(); br.close(); getMyFilesServer.close();
+  }
   private static boolean checkFileInMyFingerTable(int fileKey) throws Exception {
     int start, end;
     for(int i = 0;i < m;i++) {
@@ -144,13 +180,11 @@ public class Peer {
   }
   private static String sendFileAddress(int fileKey) throws Exception {
     int start, end;
-    // System.out.println("fileKey -> " + fileKey);
     if(fileKey == myKey)
       return (myIPAdress + ":" + myPort);
     for(int i = 0;i < m;i++) {
       start = fingerTable[i].startInterval;
       end = fingerTable[i].endInterval;
-      // System.out.println("Start -> " + start + ", End -> " + end);
       if(RowInFingerTable.insideInterval(fileKey, start, end))
         return (fingerTable[i].IPAddress + ":" + fingerTable[i].port);
     }
@@ -316,18 +350,3 @@ class queryProcessingThread extends Thread {
     }
   }
 }
-
-// private void sendFingerTable() throws Exception {
-//   ServerSocket sendFTServer = new ServerSocket(myPort, 0, InetAddress.getByName(myIPAdress));
-//   System.out.println("Opened port for sending finger table at machine: "+myKey+" at: "+myIPAdress+":"+myPort+".");
-//   Socket connectionSocket = sendFTServer.accept();
-//   OutputStream os = connectionSocket.getOutputStream();
-//   String response = "";
-//   for (Map.Entry<Integer, String> pair : fingerTable.entrySet()) {
-//     response += (pair.getKey() + "->" + pair.getValue() + "|");
-//   }
-//   os.write(response.getBytes());
-//   os.close();
-//   connectionSocket.close();
-//   sendFTServer.close();
-// }
