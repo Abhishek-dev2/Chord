@@ -51,7 +51,7 @@ public class Peer {
       BufferedReader br = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
       OutputStream os = connectionSocket.getOutputStream();
       String request = br.readLine();
-      System.out.println("Query received: " + request);
+      // System.out.println("Query received: " + request);
       switch(request) {
         case "giveMyFiles":
           int yourKey = Integer.parseInt(br.readLine());
@@ -134,7 +134,7 @@ public class Peer {
           temp = newPeerIP.split(":");
           newPeerKey = ObtainSHA.SHA1(newPeerIP);
           updateFingerTable(newPeerKey, temp[0], Integer.parseInt(temp[1]));
-          if(num <= m) {
+          if(num <= Math.round(Math.pow(2, m))) {
             temp = predecessor.split(":");
             updatePredecessorServer = new Socket(InetAddress.getByName(temp[0]), Integer.parseInt(temp[1]));
             os1 = updatePredecessorServer.getOutputStream();
@@ -161,7 +161,7 @@ public class Peer {
   }
   private static void getMyFiles() throws Exception {
     Socket getMyFilesServer = new Socket(InetAddress.getByName(successorIPAdress[0]), successorPort[0]);
-    System.out.println("XXXXXXXXXXXXX getMyFiles() XXXXXXXXXXXXX");
+    // System.out.println("XXXXXXXXXXXXX getMyFiles() XXXXXXXXXXXXX");
     BufferedReader br = new BufferedReader(new InputStreamReader(getMyFilesServer.getInputStream()));
     OutputStream os = getMyFilesServer.getOutputStream();
     os.write(("giveMyFiles\n").getBytes());
@@ -202,7 +202,7 @@ public class Peer {
   private static void updatePredecessors() throws Exception {
     String[] temp = predecessor.split(":");
     Socket updatePredecessorServer = new Socket(InetAddress.getByName(temp[0]), Integer.parseInt(temp[1]));
-    System.out.println("XXXXXXXXXXXXX updatePredecessors() XXXXXXXXXXXXX");
+    // System.out.println("XXXXXXXXXXXXX updatePredecessors() XXXXXXXXXXXXX");
     OutputStream os = updatePredecessorServer.getOutputStream();
     os.write("UpdatePredecessorIAmNew\n".getBytes());
     os.flush();
@@ -212,7 +212,7 @@ public class Peer {
   }
   private static void updateSuccessor() throws Exception {
     Socket askSuccessorServer = new Socket(InetAddress.getByName(successorIPAdress[0]), successorPort[0]);
-    System.out.println("XXXXXXXXXXXXX updateSuccessor() XXXXXXXXXXXXX");
+    // System.out.println("XXXXXXXXXXXXX updateSuccessor() XXXXXXXXXXXXX");
     BufferedReader br = new BufferedReader(new InputStreamReader(askSuccessorServer.getInputStream()));
     OutputStream os = askSuccessorServer.getOutputStream();
     os.write("SendPredecessor\n".getBytes());
@@ -221,7 +221,7 @@ public class Peer {
     os.close(); br.close(); askSuccessorServer.close();
 
     Socket updatePredecessorServer = new Socket(InetAddress.getByName(successorIPAdress[0]), successorPort[0]);
-    System.out.println("XXXXXXXXXXXXX updateSuccessor() XXXXXXXXXXXXX");
+    // System.out.println("XXXXXXXXXXXXX updateSuccessor() XXXXXXXXXXXXX");
     os = updatePredecessorServer.getOutputStream();
     os.write("updateSuccessorIAmNew\n".getBytes());
     os.flush();
@@ -262,8 +262,9 @@ public class Peer {
         // myPort = rand.nextInt(65536);
         // if(myPort <= 1024)
         //   myPort += 1024;
-        System.out.print("Enter my port: ");
-        myPort = sc.nextInt();
+        // System.out.print("Enter my port: ");
+        // myPort = sc.nextInt();
+        myPort = 1234;
         myIPAdress = InetAddress.getLocalHost().getHostAddress().toString();
         peerIPAdress = InetAddress.getLocalHost().getHostAddress().toString();
         peerPort = myPort;

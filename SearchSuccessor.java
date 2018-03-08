@@ -8,7 +8,7 @@ import java.util.*;
 public class SearchSuccessor {
   public static String returnSuccessor(String IPAddress, int port) throws Exception {
     Socket askForSuccessorServer = new Socket(InetAddress.getByName(IPAddress), port);
-    System.out.println("*************** returnSuccessor() ***************");
+    // System.out.println("*************** returnSuccessor() ***************");
     BufferedReader br = new BufferedReader(new InputStreamReader(askForSuccessorServer.getInputStream()));
     OutputStream os = askForSuccessorServer.getOutputStream();
     os.write(("SendFirstSuccessor\n").getBytes());
