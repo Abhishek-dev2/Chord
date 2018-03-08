@@ -245,7 +245,7 @@ public class Peer {
   private static void turnServerOn() throws Exception {
     Scanner sc = new Scanner(System.in);
     Random rand = new Random();
-    System.out.println("Is this the first instance?(y/n)");
+    System.out.print("Is this the first instance?(y/n) ");
     switch(sc.nextLine()) {
       case "y":
         firstNode = true;
@@ -293,7 +293,7 @@ public class Peer {
 
 class MenuThread extends Thread {
   private void display() {
-    System.out.println("Menu:\n1. IP Address and ID\n2. IP address and ID of the successor and predecessor");
+    System.out.println("\nMenu:\n1. IP Address and ID\n2. IP address and ID of the successor and predecessor");
     System.out.print("3. The file key IDs it contains\n4. Finger table\nEnter choice: ");
   }
   public void run() {
@@ -303,26 +303,32 @@ class MenuThread extends Thread {
       int x = sc.nextInt();
       switch(x) {
         case 1:
-          System.out.println("IP Address: " + Peer.myIPAdress + ", Port: " + Peer.myPort + "\nID: " + Peer.myKey);
+          System.out.println("IP Address: " + Peer.myIPAdress + ", Port: " + Peer.myPort + "\nID: " + Peer.myKey + "\n");
           break;
         case 2:
           try {
-            System.out.println("Address of successor: " + Peer.successorIPAdress[0] + ":" + Peer.successorPort[0]);
-            System.out.println("ID of successor: " + ObtainSHA.SHA1(Peer.successorIPAdress[0] + ":" + Peer.successorPort[0]));
-            System.out.println("Address of predecessor: " + Peer.predecessor);
-            System.out.println("ID of predecessor: " + ObtainSHA.SHA1(Peer.predecessor));
+            System.out.println("Address of successor: " + Peer.successorIPAdress[0] + ":" + Peer.successorPort[0]
+                                  + " with id: " + ObtainSHA.SHA1(Peer.successorIPAdress[0] + ":" + Peer.successorPort[0]));
+            System.out.println("Address of predecessor: " + Peer.predecessor
+                                  + " with id: " + ObtainSHA.SHA1(Peer.predecessor) + "\n");
           } catch(Exception ex) {
             ex.printStackTrace();
           }
           break;
         case 3:
           File[] listOfFiles = (new File("./files")).listFiles();
+          Set< String > uniqueFileKey = new HashSet< String >();
           try {
             for (int i = 0; i < listOfFiles.length; i++)
-              System.out.println(listOfFiles[i].getName() + " with key: " + ObtainSHA.SHA1(listOfFiles[i].getName()));
+              uniqueFileKey.add(ObtainSHA.SHA1(listOfFiles[i].getName()) + " ");
+                // System.out.println(listOfFiles[i].getName() + " with key: " + ObtainSHA.SHA1(listOfFiles[i].getName()));
           } catch(Exception ex) {
             ex.printStackTrace();
           }
+          System.out.print("This node has files with following keys: ");
+          for(String i: uniqueFileKey)
+            System.out.print(i);
+          System.out.println();
           break;
         case 4:
           for(RowInFingerTable i: Peer.fingerTable) {
@@ -333,9 +339,10 @@ class MenuThread extends Thread {
               ex.printStackTrace();
             }
           }
+          System.out.println();
           break;
         default:
-          System.out.println("XXXXXXXXXXXXX Invalid Menu Item XXXXXXXXXXXXX");
+          System.out.println("XXXXXXXXXXXXX Invalid Menu Item XXXXXXXXXXXXX\n");
       }
     }
   }

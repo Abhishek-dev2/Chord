@@ -28,11 +28,12 @@ public class ObtainSHA {
     // Trancating here
     // System.out.println("data[0]: " + data[0]);
     if(Peer.m == 5)
-      return (data[0] >>> Peer.m) & 0x1F;
+      return (data[19] >>> Peer.m) & 0x1F;
     else {
       System.out.println("Change hexcode above since m != 5.");
       return -1;
     }
+    // int key = Integer.parseInt(new BigInteger(sha1, 16).toString(2).substring(95, 100), 2);
     // StringBuffer buf = new StringBuffer();
     // for (int i = 0; i < data.length; i++) {
     //   int halfbyte = (data[i] >>> 4) & 0x0F;
