@@ -259,6 +259,7 @@ public class Peer {
         peerPort = myPort;
         myKey = ObtainSHA.SHA1(myIPAdress + ":" + myPort);
         int start = myKey + 1, end;
+        start = (int)(start % Math.round(Math.pow(2, m)));
         for(int i = 0;i < m;i++) {
           end = (int)((start + Math.round(Math.pow(2, i))) % Math.round(Math.pow(2, m)));
           fingerTable[i] = new RowInFingerTable(start, end, myPort, myIPAdress);
