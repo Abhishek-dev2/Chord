@@ -17,7 +17,7 @@ public class Peer {
     turnServerOn();
     myKey = ObtainSHA.SHA1(myIPAdress + ":" + myPort);
     System.out.println("key: " + myKey);
-    Thread t1 = new queryProcessingThread();
+    Thread t1 = new QueryProcessingThread();
     t1.start();
     if(!firstNode) {
       System.out.println("\n=== Creating finger table ===");
@@ -42,123 +42,7 @@ public class Peer {
     }
     MainMenu.run();
   }
-  public static void queryProcessing() throws Exception {
-    ServerSocket queryProcessingServer = new ServerSocket(myPort, 0, InetAddress.getByName(myIPAdress));
-    // System.out.println("[MAIN THREAD] Opened port for queryProcessing at machine: "+myKey+" at: "+myIPAdress+":"+myPort+".");
-    while(true) {
-      Socket connectionSocket = queryProcessingServer.accept();
-      BufferedReader br = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
-      OutputStream os = connectionSocket.getOutputStream();
-      String request = br.readLine();
-      // System.out.println("Query received: " + request);
-      switch(request) {
-        case "giveMyFiles":
-          int yourKey = Integer.parseInt(br.readLine());
-          File[] listOfFiles = (new File("./files")).listFiles();
-          try {
-            for (int i = 0; i < listOfFiles.length; i++) {
-              int x = ObtainSHA.SHA1(listOfFiles[i].getName());
-              if(yourKey == RowInFingerTable.clockwiseClosest(x, yourKey, myKey)) {
-                os.write((listOfFiles[i].getName() + "\n").getBytes());
-                os.flush();
-                listOfFiles[i].delete();
-              }
-            }
-          } catch(Exception ex) {
-            ex.printStackTrace();
-          }
-          os.write("#*#\n".getBytes());
-          os.flush();
-          break;
-        case "SendFileAddress":
-          int fileKey = Integer.parseInt(br.readLine());
-          if(checkFileInMyFingerTable(fileKey)) {
-            os.write((sendFileAddress(fileKey) + "\n").getBytes());
-            os.flush();
-          } else {
-            String Addr = sendFileAddress(fileKey);
-            // System.out.println("######################## " + Addr + " ###########################");
-            String[] temp = Addr.split(":");
-            Addr = SearchFile.returnFileAddress(fileKey, temp[0], Integer.parseInt(temp[1]));
-            os.write((Addr + "\n").getBytes());
-            os.flush();
-          }
-          break;
-        case "SendFirstSuccessor":
-          os.write((successorIPAdress[0] + ":" + successorPort[0] + "\n").getBytes());
-          os.flush();
-          break;
-        case "SendPredecessor":
-          os.write((predecessor + "\n").getBytes());
-          os.flush();
-          break;
-        case "updateSuccessorIAmNew":
-          predecessor = br.readLine();
-          break;
-        case "UpdatePredecessorIAmNew":
-          String newPeerIP = br.readLine();
-          String[] temp = newPeerIP.split(":");
-          successorIPAdress[2] = successorIPAdress[1]; successorPort[2] = successorPort[1];
-          successorIPAdress[1] = successorIPAdress[0]; successorPort[1] = successorPort[0];
-          successorIPAdress[0] = temp[0]; successorPort[0] = Integer.parseInt(temp[1]);
-          int newPeerKey = ObtainSHA.SHA1(newPeerIP);
-          updateFingerTable(newPeerKey, temp[0], successorPort[0]);
-          temp = predecessor.split(":");
-          Socket updatePredecessorServer = new Socket(InetAddress.getByName(temp[0]), Integer.parseInt(temp[1]));
-          OutputStream os1 = updatePredecessorServer.getOutputStream();
-          os1.write("UpdatePredecessorIAmPredecessor\n".getBytes());
-          os1.flush();
-          os1.write((1 + "\n").getBytes());
-          os1.flush();
-          os1.write((myIPAdress + ":" + myPort + "\n").getBytes());
-          os1.flush();
-          os1.write((newPeerIP + "\n").getBytes());
-          os1.flush();
-          os1.close(); updatePredecessorServer.close();
-          break;
-        case "UpdatePredecessorIAmPredecessor":
-          int num = Integer.parseInt(br.readLine());
-          if(num == 1) {
-            String mySuccessorIP = br.readLine();
-            temp = mySuccessorIP.split(":");
-            successorIPAdress[2] = successorIPAdress[1]; successorPort[2] = successorPort[1];
-            successorIPAdress[1] = temp[0]; successorPort[1] = Integer.parseInt(temp[1]);
-          }
-          else if(num == 2) {
-            String mySuccessorIP = br.readLine();
-            temp = mySuccessorIP.split(":");
-            successorIPAdress[2] = temp[0]; successorPort[2] = Integer.parseInt(temp[1]);
-          }
-          newPeerIP = br.readLine();
-          temp = newPeerIP.split(":");
-          newPeerKey = ObtainSHA.SHA1(newPeerIP);
-          updateFingerTable(newPeerKey, temp[0], Integer.parseInt(temp[1]));
-          if(num <= Math.round(Math.pow(2, m))) {
-            temp = predecessor.split(":");
-            updatePredecessorServer = new Socket(InetAddress.getByName(temp[0]), Integer.parseInt(temp[1]));
-            os1 = updatePredecessorServer.getOutputStream();
-            os1.write("UpdatePredecessorIAmPredecessor\n".getBytes());
-            os1.flush();
-            os1.write(((num + 1) + "\n").getBytes());
-            os1.flush();
-            if(num == 1) {
-              os1.write((myIPAdress + ":" + myPort + "\n").getBytes());
-              os1.flush();
-            }
-            os1.write((newPeerIP + "\n").getBytes());
-            os1.flush();
-            os1.close(); updatePredecessorServer.close();
-          }
-          break;
-        default:
-          System.out.println("Connection accepted but no such query.");
-      }
-      os.close();
-      br.close();
-      connectionSocket.close();
-    }
-  }
-  private static void getMyFiles() throws Exception {
+  public static void getMyFiles() throws Exception {
     Socket getMyFilesServer = new Socket(InetAddress.getByName(successorIPAdress[0]), successorPort[0]);
     // System.out.println("XXXXXXXXXXXXX getMyFiles() XXXXXXXXXXXXX");
     BufferedReader br = new BufferedReader(new InputStreamReader(getMyFilesServer.getInputStream()));
@@ -175,7 +59,7 @@ public class Peer {
     }
     os.close(); br.close(); getMyFilesServer.close();
   }
-  private static boolean checkFileInMyFingerTable(int fileKey) throws Exception {
+  public static boolean checkFileInMyFingerTable(int fileKey) throws Exception {
     int start, end;
     for(int i = 0;i < m;i++) {
       start = fingerTable[i].startInterval;
@@ -186,7 +70,7 @@ public class Peer {
     }
     return false;
   }
-  private static String sendFileAddress(int fileKey) throws Exception {
+  public static String sendFileAddress(int fileKey) throws Exception {
     int start, end;
     if(fileKey == myKey)
       return (myIPAdress + ":" + myPort);
@@ -239,7 +123,7 @@ public class Peer {
       start = end;
     }
   }
-  private static void updateFingerTable(int key, String IPAddress, int port) {
+  public static void updateFingerTable(int key, String IPAddress, int port) {
     int start, end;
     for(int i = 0;i < m;i++) {
       start = fingerTable[i].startInterval;
@@ -299,15 +183,5 @@ public class Peer {
     }
     myIPAdress = InetAddress.getLocalHost().getHostAddress().toString();
     System.out.println("Server for this peer is running at: " + myIPAdress + ":" + myPort);
-  }
-}
-
-class queryProcessingThread extends Thread {
-  public void run() {
-    try {
-      Peer.queryProcessing();
-    } catch(Exception ex) {
-      ex.printStackTrace();
-    }
   }
 }
