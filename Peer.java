@@ -8,7 +8,7 @@ import java.util.*;
 public class Peer {
   public static boolean firstNode = false;
   public static String myIPAdress, peerIPAdress;
-  public static int myPort, myKey, m = 5, peerPort;
+  public static int myPort, myKey, m = 8, peerPort;
   public static RowInFingerTable[] fingerTable = new RowInFingerTable[m];
   public static String predecessor = "";
   public static String[] successorIPAdress = new String[3];
@@ -20,23 +20,32 @@ public class Peer {
     Thread t1 = new queryProcessingThread();
     t1.start();
     if(!firstNode) {
+      System.out.println("\n=== Creating finger table ===");
+      Thread.sleep(2000);
       createFingerTable();
+      System.out.println("\n=== Finding three successors ===");
+      Thread.sleep(2000);
       successorIPAdress[0] = fingerTable[0].IPAddress; successorPort[0] = fingerTable[0].port;
       String[] temp = SearchSuccessor.returnSuccessor(successorIPAdress[0], successorPort[0]).split(":");
       successorIPAdress[1] = temp[0]; successorPort[1] = Integer.parseInt(temp[1]);
       temp = SearchSuccessor.returnSuccessor(successorIPAdress[1], successorPort[1]).split(":");
       successorIPAdress[2] = temp[0]; successorPort[2] = Integer.parseInt(temp[1]);
+      System.out.println("\n=== Updating predecessor of immediate successor ===");
+      Thread.sleep(2000);
       updateSuccessor();
+      System.out.println("\n=== Updating successors and finger table of predecessors ===");
+      Thread.sleep(2000);
       updatePredecessors();
+      System.out.println("\n=== Receiving my files from my successor ===");
+      Thread.sleep(2000);
       getMyFiles();
     }
     Thread t2 = new MenuThread();
     t2.start();
   }
-  // different peers will talk using this method
   public static void queryProcessing() throws Exception {
     ServerSocket queryProcessingServer = new ServerSocket(myPort, 0, InetAddress.getByName(myIPAdress));
-    System.out.println("[MAIN THREAD] Opened port for queryProcessing at machine: "+myKey+" at: "+myIPAdress+":"+myPort+".");
+    // System.out.println("[MAIN THREAD] Opened port for queryProcessing at machine: "+myKey+" at: "+myIPAdress+":"+myPort+".");
     while(true) {
       Socket connectionSocket = queryProcessingServer.accept();
       BufferedReader br = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
@@ -155,7 +164,7 @@ public class Peer {
     System.out.println("XXXXXXXXXXXXX getMyFiles() XXXXXXXXXXXXX");
     BufferedReader br = new BufferedReader(new InputStreamReader(getMyFilesServer.getInputStream()));
     OutputStream os = getMyFilesServer.getOutputStream();
-    os.write("giveMyFiles\n".getBytes());
+    os.write(("giveMyFiles\n").getBytes());
     os.flush();
     os.write((myKey + "\n").getBytes());
     os.flush();
@@ -163,6 +172,7 @@ public class Peer {
     while(!fileName.equals("#*#")) {
       File file = new File("./files/" + fileName);
       file.createNewFile();
+      fileName = br.readLine();
     }
     os.close(); br.close(); getMyFilesServer.close();
   }
@@ -299,6 +309,7 @@ class MenuThread extends Thread {
   }
   public void run() {
     Scanner sc = new Scanner(System.in);
+    System.out.println("\n[USE CONTROL-C TO STOP THIS PEER]\n");
     while(true) {
       display();
       int x = sc.nextInt();
@@ -318,18 +329,16 @@ class MenuThread extends Thread {
           break;
         case 3:
           File[] listOfFiles = (new File("./files")).listFiles();
-          Set< String > uniqueFileKey = new HashSet< String >();
+          TreeSet< Integer > uniqueFileKey = new TreeSet< Integer >();
           try {
             for (int i = 0; i < listOfFiles.length; i++)
-              uniqueFileKey.add(ObtainSHA.SHA1(listOfFiles[i].getName()) + " ");
+              uniqueFileKey.add(ObtainSHA.SHA1(listOfFiles[i].getName()));
                 // System.out.println(listOfFiles[i].getName() + " with key: " + ObtainSHA.SHA1(listOfFiles[i].getName()));
           } catch(Exception ex) {
             ex.printStackTrace();
           }
           System.out.print("This node has files with following keys: ");
-          for(String i: uniqueFileKey)
-            System.out.print(i);
-          System.out.println();
+          System.out.println(uniqueFileKey);
           break;
         case 4:
           for(RowInFingerTable i: Peer.fingerTable) {
