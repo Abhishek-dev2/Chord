@@ -14,7 +14,7 @@ public class Peer {
   public static String[] successorIPAdress = new String[3];
   public static int[] successorPort = new int[3];
   public static void main(String[] args) throws Exception {
-    turnServerOn();
+    getPeerInfo();
     myKey = ObtainSHA.SHA1(myIPAdress + ":" + myPort);
     System.out.println("key: " + myKey);
     Thread t1 = new QueryProcessingThread();
@@ -42,7 +42,7 @@ public class Peer {
     }
     MainMenu.run();
   }
-  public static void getMyFiles() throws Exception {
+  private static void getMyFiles() throws Exception {
     Socket getMyFilesServer = new Socket(InetAddress.getByName(successorIPAdress[0]), successorPort[0]);
     // System.out.println("XXXXXXXXXXXXX getMyFiles() XXXXXXXXXXXXX");
     BufferedReader br = new BufferedReader(new InputStreamReader(getMyFilesServer.getInputStream()));
@@ -58,29 +58,6 @@ public class Peer {
       fileName = br.readLine();
     }
     os.close(); br.close(); getMyFilesServer.close();
-  }
-  public static boolean checkFileInMyFingerTable(int fileKey) throws Exception {
-    int start, end;
-    for(int i = 0;i < m;i++) {
-      start = fingerTable[i].startInterval;
-      end = fingerTable[i].endInterval;
-      if(RowInFingerTable.insideInterval(fileKey, start, end))
-        if(RowInFingerTable.insideInterval(fileKey, start, fingerTable[i].key))
-          return true;
-    }
-    return false;
-  }
-  public static String sendFileAddress(int fileKey) throws Exception {
-    int start, end;
-    if(fileKey == myKey)
-      return (myIPAdress + ":" + myPort);
-    for(int i = 0;i < m;i++) {
-      start = fingerTable[i].startInterval;
-      end = fingerTable[i].endInterval;
-      if(RowInFingerTable.insideInterval(fileKey, start, end))
-        return (fingerTable[i].IPAddress + ":" + fingerTable[i].port);
-    }
-    return "";
   }
   private static void updatePredecessors() throws Exception {
     String[] temp = predecessor.split(":");
@@ -123,19 +100,7 @@ public class Peer {
       start = end;
     }
   }
-  public static void updateFingerTable(int key, String IPAddress, int port) {
-    int start, end;
-    for(int i = 0;i < m;i++) {
-      start = fingerTable[i].startInterval;
-      end = fingerTable[i].endInterval;
-      if(RowInFingerTable.clockwiseClosest(start, key, fingerTable[i].key) == key) {
-        fingerTable[i].key = key;
-        fingerTable[i].IPAddress = IPAddress;
-        fingerTable[i].port = port;
-      }
-    }
-  }
-  private static void turnServerOn() throws Exception {
+  private static void getPeerInfo() throws Exception {
     Scanner sc = new Scanner(System.in);
     Random rand = new Random();
     System.out.print("Is this the first instance?(y/n) ");

@@ -36,11 +36,11 @@ public class QueryProcessingThread extends Thread {
           break;
         case "SendFileAddress":
           int fileKey = Integer.parseInt(br.readLine());
-          if(Peer.checkFileInMyFingerTable(fileKey)) {
-            os.write((Peer.sendFileAddress(fileKey) + "\n").getBytes());
+          if(checkFileInMyFingerTable(fileKey)) {
+            os.write((sendFileAddress(fileKey) + "\n").getBytes());
             os.flush();
           } else {
-            String Addr = Peer.sendFileAddress(fileKey);
+            String Addr = sendFileAddress(fileKey);
             // System.out.println("######################## " + Addr + " ###########################");
             String[] temp = Addr.split(":");
             Addr = SearchFile.returnFileAddress(fileKey, temp[0], Integer.parseInt(temp[1]));
@@ -66,7 +66,7 @@ public class QueryProcessingThread extends Thread {
           Peer.successorIPAdress[1] = Peer.successorIPAdress[0]; Peer.successorPort[1] = Peer.successorPort[0];
           Peer.successorIPAdress[0] = temp[0]; Peer.successorPort[0] = Integer.parseInt(temp[1]);
           int newPeerKey = ObtainSHA.SHA1(newPeerIP);
-          Peer.updateFingerTable(newPeerKey, temp[0], Peer.successorPort[0]);
+          updateFingerTable(newPeerKey, temp[0], Peer.successorPort[0]);
           temp = Peer.predecessor.split(":");
           Socket updatePredecessorServer = new Socket(InetAddress.getByName(temp[0]), Integer.parseInt(temp[1]));
           OutputStream os1 = updatePredecessorServer.getOutputStream();
@@ -87,7 +87,7 @@ public class QueryProcessingThread extends Thread {
           newPeerIP = br.readLine();
           temp = newPeerIP.split(":");
           newPeerKey = ObtainSHA.SHA1(newPeerIP);
-          Peer.updateFingerTable(newPeerKey, temp[0], Integer.parseInt(temp[1]));
+          updateFingerTable(newPeerKey, temp[0], Integer.parseInt(temp[1]));
           if(num <= Math.round(Math.pow(2, Peer.m))) {
             temp = Peer.predecessor.split(":");
             updatePredecessorServer = new Socket(InetAddress.getByName(temp[0]), Integer.parseInt(temp[1]));
@@ -110,6 +110,41 @@ public class QueryProcessingThread extends Thread {
       br.close();
       connectionSocket.close();
     }
+  }
+  private static String sendFileAddress(int fileKey) throws Exception {
+    int start, end;
+    if(fileKey == Peer.myKey)
+      return (Peer.myIPAdress + ":" + Peer.myPort);
+    for(int i = 0;i < Peer.m;i++) {
+      start = Peer.fingerTable[i].startInterval;
+      end = Peer.fingerTable[i].endInterval;
+      if(RowInFingerTable.insideInterval(fileKey, start, end))
+        return (Peer.fingerTable[i].IPAddress + ":" + Peer.fingerTable[i].port);
+    }
+    return "";
+  }
+  private static void updateFingerTable(int key, String IPAddress, int port) {
+    int start, end;
+    for(int i = 0;i < Peer.m;i++) {
+      start = Peer.fingerTable[i].startInterval;
+      end = Peer.fingerTable[i].endInterval;
+      if(RowInFingerTable.clockwiseClosest(start, key, Peer.fingerTable[i].key) == key) {
+        Peer.fingerTable[i].key = key;
+        Peer.fingerTable[i].IPAddress = IPAddress;
+        Peer.fingerTable[i].port = port;
+      }
+    }
+  }
+  private static boolean checkFileInMyFingerTable(int fileKey) throws Exception {
+    int start, end;
+    for(int i = 0;i < Peer.m;i++) {
+      start = Peer.fingerTable[i].startInterval;
+      end = Peer.fingerTable[i].endInterval;
+      if(RowInFingerTable.insideInterval(fileKey, start, end))
+        if(RowInFingerTable.insideInterval(fileKey, start, Peer.fingerTable[i].key))
+          return true;
+    }
+    return false;
   }
   public void run() {
     try {
