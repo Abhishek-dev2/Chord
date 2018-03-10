@@ -31,7 +31,7 @@ public class Peer {
       successorIPAdress[2] = temp[0]; successorPort[2] = Integer.parseInt(temp[1]);
       Thread.sleep(2000);
       System.out.println("\n=== Updating predecessor of immediate successor ===");
-      updateSuccessor();
+      updateSuccessor(true);
       Thread.sleep(2000);
       System.out.println("\n=== Updating successors and finger table of predecessors ===");
       updatePredecessors();
@@ -68,15 +68,19 @@ public class Peer {
     os.flush();
     os.close(); updatePredecessorServer.close();
   }
-  public static void updateSuccessor() throws Exception {
-    Socket askSuccessorServer = new Socket(InetAddress.getByName(successorIPAdress[0]), successorPort[0]);
-    // System.out.println("XXXXXXXXXXXXX updateSuccessor() XXXXXXXXXXXXX");
-    BufferedReader br = new BufferedReader(new InputStreamReader(askSuccessorServer.getInputStream()));
-    OutputStream os = askSuccessorServer.getOutputStream();
-    os.write("SendPredecessor\n".getBytes());
-    os.flush();
-    predecessor = br.readLine();
-    os.close(); br.close(); askSuccessorServer.close();
+  public static void updateSuccessor(boolean beingCreated) throws Exception {
+    OutputStream os = null;
+    BufferedReader br = null;
+    if(beingCreated) {
+      Socket askSuccessorServer = new Socket(InetAddress.getByName(successorIPAdress[0]), successorPort[0]);
+      // System.out.println("XXXXXXXXXXXXX updateSuccessor() XXXXXXXXXXXXX");
+      br = new BufferedReader(new InputStreamReader(askSuccessorServer.getInputStream()));
+      os = askSuccessorServer.getOutputStream();
+      os.write("SendPredecessor\n".getBytes());
+      os.flush();
+      predecessor = br.readLine();
+      os.close(); br.close(); askSuccessorServer.close();
+    }
 
     Socket updatePredecessorServer = new Socket(InetAddress.getByName(successorIPAdress[0]), successorPort[0]);
     // System.out.println("XXXXXXXXXXXXX updateSuccessor() XXXXXXXXXXXXX");

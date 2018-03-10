@@ -20,9 +20,13 @@ public class StabilizationThread extends Thread {
         try {
           System.out.println("\n=== My successor left ===");
           System.out.println("\n=== Updating finger table ===");
-          Peer.fingerTable[0].IPAddress = Peer.successorIPAdress[1];
-          Peer.fingerTable[0].port = Peer.successorPort[1];
-          Peer.fingerTable[0].key = ObtainSHA.SHA1(Peer.successorIPAdress[1] + ":" + Peer.successorPort[1]);
+          for(int i = 0;i < Peer.m;i++) {
+            if(Peer.fingerTable[i].key == ObtainSHA.SHA1(Peer.successorIPAdress[0] + ":" + Peer.successorPort[0])) {
+              Peer.fingerTable[i].IPAddress = Peer.successorIPAdress[1];
+              Peer.fingerTable[i].port = Peer.successorPort[1];
+              Peer.fingerTable[i].key = ObtainSHA.SHA1(Peer.successorIPAdress[1] + ":" + Peer.successorPort[1]);
+            }
+          }
           Thread.sleep(1000);
           System.out.println("\n=== Updating three successors ===");
           Peer.successorPort[0] = Peer.successorPort[1];
@@ -33,7 +37,7 @@ public class StabilizationThread extends Thread {
           Peer.successorIPAdress[2] = temp[0]; Peer.successorPort[2] = Integer.parseInt(temp[1]);
           Thread.sleep(2000);
           System.out.println("\n=== Updating predecessor of immediate successor ===");
-          Peer.updateSuccessor();
+          Peer.updateSuccessor(false);
           Thread.sleep(2000);
           System.out.println("\n=== Updating successors and finger table of predecessors ===");
           Peer.updatePredecessors();
