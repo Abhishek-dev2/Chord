@@ -13,9 +13,38 @@ public class QueryProcessingThread extends Thread {
       Socket connectionSocket = queryProcessingServer.accept();
       BufferedReader br = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
       OutputStream os = connectionSocket.getOutputStream();
+      Thread T = new ClientThread(connectionSocket, br, os);
+      T.start();
+    }
+  }
+  public void run() {
+    try {
+      queryProcessing();
+    } catch(Exception ex) {
+      ex.printStackTrace();
+    }
+  }
+}
+class ClientThread extends Thread {
+  private Socket connectionSocket = null;
+  private BufferedReader br;
+  private OutputStream os;
+  public ClientThread(Socket connectionSocket, BufferedReader br, OutputStream os) {
+    this.connectionSocket = connectionSocket;
+    this.br = br;
+    this.os = os;
+    System.out.println("************** NEW CLIENT THREAD IS CREATED ****************");
+  }
+  public void run() {
+    try {
       String request = br.readLine();
       // System.out.println("Query received: " + request);
       switch(request) {
+        case "areYouThere":
+          System.out.println("************* YesIAmPresent *************");
+          // os.write("YesIAmPresent\n".getBytes());
+          // os.flush();
+          break;
         case "giveMyFiles":
           int yourKey = Integer.parseInt(br.readLine());
           File[] listOfFiles = (new File("./files")).listFiles();
@@ -109,6 +138,8 @@ public class QueryProcessingThread extends Thread {
       os.close();
       br.close();
       connectionSocket.close();
+    } catch(Exception ex) {
+      ex.printStackTrace();
     }
   }
   private static String sendFileAddress(int fileKey) throws Exception {
@@ -145,12 +176,5 @@ public class QueryProcessingThread extends Thread {
           return true;
     }
     return false;
-  }
-  public void run() {
-    try {
-      queryProcessing();
-    } catch(Exception ex) {
-      ex.printStackTrace();
-    }
   }
 }

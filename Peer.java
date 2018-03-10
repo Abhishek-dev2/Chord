@@ -21,25 +21,27 @@ public class Peer {
     t1.start();
     if(!firstNode) {
       System.out.println("\n=== Creating finger table ===");
-      Thread.sleep(2000);
       createFingerTable();
-      System.out.println("\n=== Finding three successors ===");
       Thread.sleep(2000);
+      System.out.println("\n=== Finding three successors ===");
       successorIPAdress[0] = fingerTable[0].IPAddress; successorPort[0] = fingerTable[0].port;
       String[] temp = SearchSuccessor.returnSuccessor(successorIPAdress[0], successorPort[0]).split(":");
       successorIPAdress[1] = temp[0]; successorPort[1] = Integer.parseInt(temp[1]);
       temp = SearchSuccessor.returnSuccessor(successorIPAdress[1], successorPort[1]).split(":");
       successorIPAdress[2] = temp[0]; successorPort[2] = Integer.parseInt(temp[1]);
+      Thread.sleep(2000);
       System.out.println("\n=== Updating predecessor of immediate successor ===");
-      Thread.sleep(2000);
       updateSuccessor();
+      Thread.sleep(2000);
       System.out.println("\n=== Updating successors and finger table of predecessors ===");
-      Thread.sleep(2000);
       updatePredecessors();
-      System.out.println("\n=== Receiving my files from my successor ===");
       Thread.sleep(2000);
+      System.out.println("\n=== Receiving my files from my successor ===");
       getMyFiles();
+      Thread.sleep(2000);
     }
+    Thread t2 = new StabilizationThread();
+    t2.start();
     MainMenu.run();
   }
   private static void getMyFiles() throws Exception {
@@ -47,9 +49,7 @@ public class Peer {
     // System.out.println("XXXXXXXXXXXXX getMyFiles() XXXXXXXXXXXXX");
     BufferedReader br = new BufferedReader(new InputStreamReader(getMyFilesServer.getInputStream()));
     OutputStream os = getMyFilesServer.getOutputStream();
-    os.write(("giveMyFiles\n").getBytes());
-    os.flush();
-    os.write((myKey + "\n").getBytes());
+    os.write(("giveMyFiles\n" + myKey + "\n").getBytes());
     os.flush();
     String fileName = br.readLine();
     while(!fileName.equals("#*#")) {
@@ -59,18 +59,16 @@ public class Peer {
     }
     os.close(); br.close(); getMyFilesServer.close();
   }
-  private static void updatePredecessors() throws Exception {
+  public static void updatePredecessors() throws Exception {
     String[] temp = predecessor.split(":");
     Socket updatePredecessorServer = new Socket(InetAddress.getByName(temp[0]), Integer.parseInt(temp[1]));
     // System.out.println("XXXXXXXXXXXXX updatePredecessors() XXXXXXXXXXXXX");
     OutputStream os = updatePredecessorServer.getOutputStream();
-    os.write("UpdatePredecessorIAmNew\n".getBytes());
-    os.flush();
-    os.write((myIPAdress + ":" + myPort + "\n").getBytes());
+    os.write(("UpdatePredecessorIAmNew\n" + myIPAdress + ":" + myPort + "\n").getBytes());
     os.flush();
     os.close(); updatePredecessorServer.close();
   }
-  private static void updateSuccessor() throws Exception {
+  public static void updateSuccessor() throws Exception {
     Socket askSuccessorServer = new Socket(InetAddress.getByName(successorIPAdress[0]), successorPort[0]);
     // System.out.println("XXXXXXXXXXXXX updateSuccessor() XXXXXXXXXXXXX");
     BufferedReader br = new BufferedReader(new InputStreamReader(askSuccessorServer.getInputStream()));
@@ -83,9 +81,7 @@ public class Peer {
     Socket updatePredecessorServer = new Socket(InetAddress.getByName(successorIPAdress[0]), successorPort[0]);
     // System.out.println("XXXXXXXXXXXXX updateSuccessor() XXXXXXXXXXXXX");
     os = updatePredecessorServer.getOutputStream();
-    os.write("updateSuccessorIAmNew\n".getBytes());
-    os.flush();
-    os.write((myIPAdress + ":" + myPort + "\n").getBytes());
+    os.write(("updateSuccessorIAmNew\n" + myIPAdress + ":" + myPort + "\n").getBytes());
     os.flush();
     os.close(); updatePredecessorServer.close();
   }
