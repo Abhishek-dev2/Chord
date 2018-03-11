@@ -23,18 +23,19 @@ public class Peer {
       System.out.println("\n=== Creating finger table ===");
       createFingerTable();
       Thread.sleep(2000);
-      System.out.println("\n=== Finding three successors ===");
+      System.out.println("\n=== Finding first successors ===");
       successorIPAdress[0] = fingerTable[0].IPAddress; successorPort[0] = fingerTable[0].port;
-      String[] temp = SearchSuccessor.returnSuccessor(successorIPAdress[0], successorPort[0]).split(":");
-      successorIPAdress[1] = temp[0]; successorPort[1] = Integer.parseInt(temp[1]);
-      temp = SearchSuccessor.returnSuccessor(successorIPAdress[1], successorPort[1]).split(":");
-      successorIPAdress[2] = temp[0]; successorPort[2] = Integer.parseInt(temp[1]);
-      Thread.sleep(2000);
       System.out.println("\n=== Updating predecessor of immediate successor ===");
       updateSuccessor(true);
       Thread.sleep(2000);
       System.out.println("\n=== Updating successors and finger table of predecessors ===");
       updatePredecessors();
+      Thread.sleep(2000);
+      System.out.println("\n=== Finding other successors ===");
+      String[] temp = SearchSuccessor.returnSuccessor(successorIPAdress[0], successorPort[0]).split(":");
+      successorIPAdress[1] = temp[0]; successorPort[1] = Integer.parseInt(temp[1]);
+      temp = SearchSuccessor.returnSuccessor(successorIPAdress[1], successorPort[1]).split(":");
+      successorIPAdress[2] = temp[0]; successorPort[2] = Integer.parseInt(temp[1]);
       Thread.sleep(2000);
       System.out.println("\n=== Receiving my files from my successor ===");
       getMyFiles();
@@ -65,6 +66,15 @@ public class Peer {
     // System.out.println("XXXXXXXXXXXXX updatePredecessors() XXXXXXXXXXXXX");
     OutputStream os = updatePredecessorServer.getOutputStream();
     os.write(("UpdatePredecessorIAmNew\n" + myIPAdress + ":" + myPort + "\n").getBytes());
+    os.flush();
+    os.close(); updatePredecessorServer.close();
+  }
+  public static void updatePredecessorsAfterDelete() throws Exception {
+    String[] temp = predecessor.split(":");
+    Socket updatePredecessorServer = new Socket(InetAddress.getByName(temp[0]), Integer.parseInt(temp[1]));
+    // System.out.println("XXXXXXXXXXXXX updatePredecessors() XXXXXXXXXXXXX");
+    OutputStream os = updatePredecessorServer.getOutputStream();
+    os.write(("UpdatePredecessorMySuccessorIsDead\n" + successorIPAdress[1] + ":" + successorPort[1] + "\n").getBytes());
     os.flush();
     os.close(); updatePredecessorServer.close();
   }
@@ -132,15 +142,18 @@ public class Peer {
         break;
       case "n":
         firstNode = false;
-        System.out.print("I need a IP Address and port of a peer(node) already running.\nPeer IP Address: ");
-        peerIPAdress = sc.nextLine();
-        System.out.print("Peer Port: ");
-        peerPort = sc.nextInt();
+        // System.out.print("I need a IP Address and port of a peer(node) already running.\nPeer IP Address: ");
+        // peerIPAdress = sc.nextLine();
+        // System.out.print("Peer Port: ");
+        // peerPort = sc.nextInt();
+        peerIPAdress = InetAddress.getLocalHost().getHostAddress().toString();
+        peerPort = 1234;
         // myPort = rand.nextInt(65536);
         // if(myPort <= 1024)
         //   myPort += 1024;
-        System.out.print("Enter my port: ");
-        myPort = sc.nextInt();
+        myPort = 2345;
+        // System.out.print("Enter my port: ");
+        // myPort = sc.nextInt();
         break;
       default:
         System.out.println("BC");

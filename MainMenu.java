@@ -7,7 +7,7 @@ import java.io.*;
 public class MainMenu {
   private static void display() {
     System.out.println("\nMenu:\n1. IP Address and ID\n2. IP address and ID of the successor and predecessor");
-    System.out.print("3. The file key IDs it contains\n4. Finger table\nEnter choice: ");
+    System.out.print("3. The file key IDs it contains\n4. Finger table\n5. Successors\nEnter choice: ");
   }
   public static void run() {
     Scanner sc = new Scanner(System.in);
@@ -52,6 +52,14 @@ public class MainMenu {
             }
           }
           System.out.println();
+          break;
+        case 5:
+          try {
+            for(int i = 0;i < 3;i++)
+              System.out.println("Successor " + (i + 1) + ": " + ObtainSHA.SHA1(Peer.successorIPAdress[i] + ":" + Peer.successorPort[i]));
+            } catch(Exception ex) {
+              ex.printStackTrace();
+            }
           break;
         default:
           System.out.println("XXXXXXXXXXXXX Invalid Menu Item XXXXXXXXXXXXX\n");

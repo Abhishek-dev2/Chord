@@ -99,7 +99,7 @@ class ClientThread extends Thread {
           temp = Peer.predecessor.split(":");
           Socket updatePredecessorServer = new Socket(InetAddress.getByName(temp[0]), Integer.parseInt(temp[1]));
           OutputStream os1 = updatePredecessorServer.getOutputStream();
-          os1.write(("UpdatePredecessorIAmPredecessor\n" + 1 + "\n" + Peer.myIPAdress + ":" + Peer.myPort + "\n" + newPeerIP + "\n").getBytes());
+          os1.write(("UpdatePredecessorIAmPredecessor\n" + 1 + "\n" + newPeerIP + "\n" + newPeerIP + "\n").getBytes());
           os1.flush();
           os1.close(); updatePredecessorServer.close();
           break;
@@ -111,8 +111,8 @@ class ClientThread extends Thread {
             Peer.successorIPAdress[2] = Peer.successorIPAdress[1]; Peer.successorPort[2] = Peer.successorPort[1];
             Peer.successorIPAdress[num] = temp[0]; Peer.successorPort[num] = Integer.parseInt(temp[1]);
           }
-          if(num == 1)
-            Peer.successorIPAdress[2] = Peer.successorIPAdress[1]; Peer.successorPort[2] = Peer.successorPort[1];
+          // if(num == 1)
+          //   Peer.successorIPAdress[2] = Peer.successorIPAdress[1]; Peer.successorPort[2] = Peer.successorPort[1];
           newPeerIP = br.readLine();
           temp = newPeerIP.split(":");
           newPeerKey = ObtainSHA.SHA1(newPeerIP);
@@ -124,10 +124,59 @@ class ClientThread extends Thread {
             os1.write(("UpdatePredecessorIAmPredecessor\n" + (num + 1) + "\n").getBytes());
             os1.flush();
             if(num == 1) {
-              os1.write((Peer.myIPAdress + ":" + Peer.myPort + "\n").getBytes());
+              os1.write((newPeerIP + "\n").getBytes());
               os1.flush();
             }
             os1.write((newPeerIP + "\n").getBytes());
+            os1.flush();
+            os1.close(); updatePredecessorServer.close();
+          }
+          break;
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        case "UpdatePredecessorMySuccessorIsDead":
+          String deadPeerReplacementSuccessorIP = br.readLine(); //
+          temp = deadPeerReplacementSuccessorIP.split(":");
+          String deadPeerIP = Peer.successorIPAdress[1] + ":" + Peer.successorPort[1];
+          for(int i = 0;i < Peer.m;i++) {
+            int k = ObtainSHA.SHA1(Peer.successorIPAdress[2] + ":" + Peer.successorPort[2]);
+            if(Peer.fingerTable[i].key == ObtainSHA.SHA1(Peer.successorIPAdress[1] + ":" + Peer.successorPort[1])) {
+              Peer.fingerTable[i].IPAddress = Peer.successorIPAdress[2];
+              Peer.fingerTable[i].port = Peer.successorPort[2];
+              Peer.fingerTable[i].key = k;
+            }
+          }
+          Peer.successorIPAdress[1] = Peer.successorIPAdress[2]; Peer.successorPort[1] = Peer.successorPort[2];
+          Peer.successorIPAdress[2] = temp[0]; Peer.successorPort[2] = Integer.parseInt(temp[1]);
+          // int deadPeerReplacementSuccessorKey = ObtainSHA.SHA1(deadPeerReplacementSuccessorIP);
+          temp = Peer.predecessor.split(":");
+          updatePredecessorServer = new Socket(InetAddress.getByName(temp[0]), Integer.parseInt(temp[1]));
+          os1 = updatePredecessorServer.getOutputStream();
+          String deadPeerSuccessorIP = Peer.successorIPAdress[1] + ":" + Peer.successorPort[1];
+          os1.write(("UpdatePredecessorPredecessorMySuccessorIsDead\n" + 1 + "\n" + deadPeerIP + "\n" + deadPeerSuccessorIP + "\n" + Peer.successorIPAdress[1] + ":" + Peer.successorPort[1] + "\n").getBytes());
+          os1.flush();
+          os1.close(); updatePredecessorServer.close();
+          break;
+        case "UpdatePredecessorPredecessorMySuccessorIsDead":
+          num = Integer.parseInt(br.readLine());
+          deadPeerIP = br.readLine();
+          String deadPeerReplacementIP = br.readLine();
+          String replacementSuccessor2 = br.readLine();
+          temp = replacementSuccessor2.split(":");
+          Peer.successorIPAdress[2] = temp[0]; Peer.successorPort[2] = Integer.parseInt(temp[1]);
+          for(int i = 0;i < Peer.m;i++) {
+            int k = ObtainSHA.SHA1(deadPeerReplacementIP);
+            temp = deadPeerReplacementIP.split(":");
+            if(Peer.fingerTable[i].key == ObtainSHA.SHA1(deadPeerIP)) {
+              Peer.fingerTable[i].IPAddress = temp[0];
+              Peer.fingerTable[i].port = Integer.parseInt(temp[1]);
+              Peer.fingerTable[i].key = k;
+            }
+          }
+          if(num <= Math.round(Math.pow(2, Peer.m))) {
+            temp = Peer.predecessor.split(":");
+            updatePredecessorServer = new Socket(InetAddress.getByName(temp[0]), Integer.parseInt(temp[1]));
+            os1 = updatePredecessorServer.getOutputStream();
+            os1.write(("UpdatePredecessorPredecessorMySuccessorIsDead\n" + (num + 1) + "\n" + deadPeerIP + "\n" + deadPeerReplacementIP + "\n" + Peer.successorIPAdress[1] + ":" + Peer.successorPort[1] + "\n").getBytes());
             os1.flush();
             os1.close(); updatePredecessorServer.close();
           }
@@ -155,6 +204,18 @@ class ClientThread extends Thread {
     return "";
   }
   private static void updateFingerTable(int key, String IPAddress, int port) {
+    int start, end;
+    for(int i = 0;i < Peer.m;i++) {
+      start = Peer.fingerTable[i].startInterval;
+      end = Peer.fingerTable[i].endInterval;
+      if(RowInFingerTable.clockwiseClosest(start, key, Peer.fingerTable[i].key) == key) {
+        Peer.fingerTable[i].key = key;
+        Peer.fingerTable[i].IPAddress = IPAddress;
+        Peer.fingerTable[i].port = port;
+      }
+    }
+  }
+  private static void updateFingerTableAfterDelete(int key, String IPAddress, int port) {
     int start, end;
     for(int i = 0;i < Peer.m;i++) {
       start = Peer.fingerTable[i].startInterval;

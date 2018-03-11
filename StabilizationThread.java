@@ -28,19 +28,20 @@ public class StabilizationThread extends Thread {
             }
           }
           Thread.sleep(1000);
-          System.out.println("\n=== Updating three successors ===");
+          System.out.println("\n=== Updating two immediate successors ===");
           Peer.successorPort[0] = Peer.successorPort[1];
           Peer.successorIPAdress[0] = Peer.successorIPAdress[1];
-          Peer.successorPort[1] = Peer.successorPort[0];
-          Peer.successorIPAdress[1] = Peer.successorIPAdress[0];
-          String[] temp = SearchSuccessor.returnSuccessor(Peer.successorIPAdress[1], Peer.successorPort[1]).split(":");
-          Peer.successorIPAdress[2] = temp[0]; Peer.successorPort[2] = Integer.parseInt(temp[1]);
-          Thread.sleep(2000);
           System.out.println("\n=== Updating predecessor of immediate successor ===");
           Peer.updateSuccessor(false);
           Thread.sleep(2000);
+          System.out.println("\n=== Updating third successor ===");
+          String[] temp = SearchSuccessor.returnSuccessor(Peer.successorIPAdress[0], Peer.successorPort[0]).split(":");
+          Peer.successorIPAdress[1] = temp[0]; Peer.successorPort[1] = Integer.parseInt(temp[1]);
+          temp = SearchSuccessor.returnSuccessor(Peer.successorIPAdress[1], Peer.successorPort[1]).split(":");
+          Peer.successorIPAdress[2] = temp[0]; Peer.successorPort[2] = Integer.parseInt(temp[1]);
+          Thread.sleep(2000); // correct
           System.out.println("\n=== Updating successors and finger table of predecessors ===");
-          Peer.updatePredecessors();
+          Peer.updatePredecessorsAfterDelete();
           Thread.sleep(2000);
         } catch(Exception exp) {
           exp.printStackTrace();
