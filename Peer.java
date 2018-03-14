@@ -8,7 +8,7 @@ import java.util.*;
 public class Peer {
   public static boolean firstNode = false;
   public static String myIPAdress, peerIPAdress;
-  public static int myPort, myKey, m = 8, peerPort;
+  public static int myPort, myKey, m = 5, peerPort;
   public static RowInFingerTable[] fingerTable = new RowInFingerTable[m];
   public static String predecessor = "";
   public static String[] successorIPAdress = new String[3];
@@ -117,12 +117,12 @@ public class Peer {
     switch(sc.nextLine()) {
       case "y":
         firstNode = true;
-        // myPort = rand.nextInt(65536);
-        // if(myPort <= 1024)
-        //   myPort += 1024;
+        myPort = rand.nextInt(65536);
+        if(myPort <= 1024)
+          myPort += 1024;
         // System.out.print("Enter my port: ");
         // myPort = sc.nextInt();
-        myPort = 1234;
+        // myPort = 1234;
         myIPAdress = InetAddress.getLocalHost().getHostAddress().toString();
         peerIPAdress = InetAddress.getLocalHost().getHostAddress().toString();
         peerPort = myPort;
@@ -144,14 +144,14 @@ public class Peer {
         firstNode = false;
         // System.out.print("I need a IP Address and port of a peer(node) already running.\nPeer IP Address: ");
         // peerIPAdress = sc.nextLine();
-        // System.out.print("Peer Port: ");
-        // peerPort = sc.nextInt();
+        System.out.print("Peer Port: ");
+        peerPort = sc.nextInt();
         peerIPAdress = InetAddress.getLocalHost().getHostAddress().toString();
-        peerPort = 1234;
-        // myPort = rand.nextInt(65536);
-        // if(myPort <= 1024)
-        //   myPort += 1024;
-        myPort = 2345;
+        // peerPort = 1234;
+        myPort = rand.nextInt(65536);
+        if(myPort <= 1024)
+          myPort += 1024;
+        // myPort = 2345;
         // System.out.print("Enter my port: ");
         // myPort = sc.nextInt();
         break;

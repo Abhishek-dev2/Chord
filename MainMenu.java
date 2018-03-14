@@ -5,13 +5,13 @@ import java.util.*;
 import java.io.*;
 
 public class MainMenu {
-  private static void display() {
+  public static void display() {
     System.out.println("\nMenu:\n1. IP Address and ID\n2. IP address and ID of the successor and predecessor");
-    System.out.print("3. The file key IDs it contains\n4. Finger table\n5. Successors\nEnter choice: ");
+    System.out.print("3. The file key IDs it contains\n4. Finger table\n5. Successors");
+    System.out.print("\n[USE CONTROL-C TO STOP THIS PEER]\nEnter choice: ");
   }
   public static void run() {
     Scanner sc = new Scanner(System.in);
-    System.out.println("\n[USE CONTROL-C TO STOP THIS PEER]\n");
     while(true) {
       display();
       int x = sc.nextInt();

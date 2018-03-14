@@ -33,7 +33,7 @@ class ClientThread extends Thread {
     this.connectionSocket = connectionSocket;
     this.br = br;
     this.os = os;
-    System.out.println("************** NEW CLIENT THREAD IS CREATED ****************");
+    // System.out.println("************** NEW CLIENT THREAD IS CREATED ****************");
   }
   public void run() {
     try {
@@ -41,7 +41,7 @@ class ClientThread extends Thread {
       // System.out.println("Query received: " + request);
       switch(request) {
         case "areYouThere":
-          System.out.println("************* YesIAmPresent *************");
+          // System.out.println("************* YesIAmPresent *************");
           // os.write("YesIAmPresent\n".getBytes());
           // os.flush();
           break;

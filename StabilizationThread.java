@@ -10,7 +10,7 @@ public class StabilizationThread extends Thread {
     while(true) {
       try {
         Socket areYouThereServer = new Socket(InetAddress.getByName(Peer.successorIPAdress[0]), Peer.successorPort[0]);
-        System.out.println("XXXXXXXXXXXXX StabilizationThread XXXXXXXXXXXXX");
+        // System.out.println("XXXXXXXXXXXXX StabilizationThread XXXXXXXXXXXXX");
         OutputStream os = areYouThereServer.getOutputStream();
         os.write("areYouThere\n".getBytes());
         os.flush();
@@ -28,13 +28,13 @@ public class StabilizationThread extends Thread {
             }
           }
           Thread.sleep(1000);
-          System.out.println("\n=== Updating two immediate successors ===");
+          System.out.println("\n=== Updating first successors ===");
           Peer.successorPort[0] = Peer.successorPort[1];
           Peer.successorIPAdress[0] = Peer.successorIPAdress[1];
           System.out.println("\n=== Updating predecessor of immediate successor ===");
           Peer.updateSuccessor(false);
           Thread.sleep(2000);
-          System.out.println("\n=== Updating third successor ===");
+          System.out.println("\n=== Updating two other successors ===");
           String[] temp = SearchSuccessor.returnSuccessor(Peer.successorIPAdress[0], Peer.successorPort[0]).split(":");
           Peer.successorIPAdress[1] = temp[0]; Peer.successorPort[1] = Integer.parseInt(temp[1]);
           temp = SearchSuccessor.returnSuccessor(Peer.successorIPAdress[1], Peer.successorPort[1]).split(":");
@@ -43,6 +43,8 @@ public class StabilizationThread extends Thread {
           System.out.println("\n=== Updating successors and finger table of predecessors ===");
           Peer.updatePredecessorsAfterDelete();
           Thread.sleep(2000);
+          System.out.println("\n=== System is stable now ===");
+          MainMenu.display();
         } catch(Exception exp) {
           exp.printStackTrace();
         }
