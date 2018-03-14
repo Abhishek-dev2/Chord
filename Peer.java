@@ -8,28 +8,28 @@ import java.util.*;
 public class Peer {
   public static boolean firstNode = false;
   public static String myIPAdress, peerIPAdress;
-  public static int myPort, myKey, m = 5, peerPort;
+  public static int myPort, myKey, m = 8, peerPort;
   public static RowInFingerTable[] fingerTable = new RowInFingerTable[m];
   public static String predecessor = "";
   public static String[] successorIPAdress = new String[3];
   public static int[] successorPort = new int[3];
   public static void main(String[] args) throws Exception {
-    getPeerInfo();
+    getPeerInfo(); // at line 123
     myKey = ObtainSHA.SHA1(myIPAdress + ":" + myPort);
     System.out.println("key: " + myKey);
     Thread t1 = new QueryProcessingThread();
     t1.start();
     if(!firstNode) {
       System.out.println("\n=== Creating finger table ===");
-      createFingerTable();
+      createFingerTable(); // at line 112
       Thread.sleep(2000);
       System.out.println("\n=== Finding first successors ===");
       successorIPAdress[0] = fingerTable[0].IPAddress; successorPort[0] = fingerTable[0].port;
       System.out.println("\n=== Updating predecessor of immediate successor ===");
-      updateSuccessor(true);
+      updateSuccessor(true); // at line 91
       Thread.sleep(2000);
       System.out.println("\n=== Updating successors and finger table of predecessors ===");
-      updatePredecessors();
+      updatePredecessors(); // at line 73
       Thread.sleep(2000);
       System.out.println("\n=== Finding other successors ===");
       String[] temp = SearchSuccessor.returnSuccessor(successorIPAdress[0], successorPort[0]).split(":");
@@ -38,7 +38,7 @@ public class Peer {
       successorIPAdress[2] = temp[0]; successorPort[2] = Integer.parseInt(temp[1]);
       Thread.sleep(2000);
       System.out.println("\n=== Receiving my files from my successor ===");
-      getMyFiles();
+      getMyFiles(); // at line 48
       Thread.sleep(2000);
     }
     Thread t2 = new StabilizationThread();

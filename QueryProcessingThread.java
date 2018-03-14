@@ -8,7 +8,6 @@ import java.net.*;
 public class QueryProcessingThread extends Thread {
   private static void queryProcessing() throws Exception {
     ServerSocket queryProcessingServer = new ServerSocket(Peer.myPort, 0, InetAddress.getByName(Peer.myIPAdress));
-    // System.out.println("[MAIN THREAD] Opened port for queryProcessing at machine: "+myKey+" at: "+myIPAdress+":"+myPort+".");
     while(true) {
       Socket connectionSocket = queryProcessingServer.accept();
       BufferedReader br = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
@@ -65,12 +64,12 @@ class ClientThread extends Thread {
           break;
         case "SendFileAddress":
           int fileKey = Integer.parseInt(br.readLine());
-          if(checkFileInMyFingerTable(fileKey)) {
-            os.write((sendFileAddress(fileKey) + "\n").getBytes());
+          if(checkFileInMyFingerTable(fileKey) /* at line 215 */) {
+            os.write((sendFileAddress(fileKey) + "\n" /* at line 191 */).getBytes());
             os.flush();
           }
           else {
-            String Addr = sendFileAddress(fileKey);
+            String Addr = sendFileAddress(fileKey); /* at line 191 */
             // System.out.println("######################## " + Addr + " ###########################");
             String[] temp = Addr.split(":");
             Addr = SearchFile.returnFileAddress(fileKey, temp[0], Integer.parseInt(temp[1]));
@@ -96,7 +95,7 @@ class ClientThread extends Thread {
           Peer.successorIPAdress[1] = Peer.successorIPAdress[0]; Peer.successorPort[1] = Peer.successorPort[0];
           Peer.successorIPAdress[0] = temp[0]; Peer.successorPort[0] = Integer.parseInt(temp[1]);
           int newPeerKey = ObtainSHA.SHA1(newPeerIP);
-          updateFingerTable(newPeerKey, temp[0], Peer.successorPort[0]);
+          updateFingerTable(newPeerKey, temp[0], Peer.successorPort[0]); /* at line 203 */
           temp = Peer.predecessor.split(":");
           Socket updatePredecessorServer = new Socket(InetAddress.getByName(temp[0]), Integer.parseInt(temp[1]));
           OutputStream os1 = updatePredecessorServer.getOutputStream();
@@ -115,7 +114,7 @@ class ClientThread extends Thread {
           newPeerIP = br.readLine();
           temp = newPeerIP.split(":");
           newPeerKey = ObtainSHA.SHA1(newPeerIP);
-          updateFingerTable(newPeerKey, temp[0], Integer.parseInt(temp[1]));
+          updateFingerTable(newPeerKey, temp[0], Integer.parseInt(temp[1])); /* at line 203 */
           if(num <= Math.round(Math.pow(2, Peer.m))) {
             temp = Peer.predecessor.split(":");
             updatePredecessorServer = new Socket(InetAddress.getByName(temp[0]), Integer.parseInt(temp[1]));
@@ -202,18 +201,6 @@ class ClientThread extends Thread {
     return "";
   }
   private static void updateFingerTable(int key, String IPAddress, int port) {
-    int start, end;
-    for(int i = 0;i < Peer.m;i++) {
-      start = Peer.fingerTable[i].startInterval;
-      end = Peer.fingerTable[i].endInterval;
-      if(RowInFingerTable.clockwiseClosest(start, key, Peer.fingerTable[i].key) == key) {
-        Peer.fingerTable[i].key = key;
-        Peer.fingerTable[i].IPAddress = IPAddress;
-        Peer.fingerTable[i].port = port;
-      }
-    }
-  }
-  private static void updateFingerTableAfterDelete(int key, String IPAddress, int port) {
     int start, end;
     for(int i = 0;i < Peer.m;i++) {
       start = Peer.fingerTable[i].startInterval;

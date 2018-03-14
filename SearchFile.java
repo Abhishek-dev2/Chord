@@ -14,9 +14,7 @@ public class SearchFile {
     // System.out.println("XXXXXXXXXXXXX returnFileAddress() of " + fileKey + " XXXXXXXXXXXXX");
     BufferedReader br = new BufferedReader(new InputStreamReader(askForFileAddressServer.getInputStream()));
     OutputStream os = askForFileAddressServer.getOutputStream();
-    os.write(("SendFileAddress\n").getBytes());
-    os.flush();
-    os.write((fileKey + "\n").getBytes());
+    os.write(("SendFileAddress\n" + fileKey + "\n").getBytes());
     os.flush();
     String fileAddress = br.readLine();
     os.close(); br.close();
