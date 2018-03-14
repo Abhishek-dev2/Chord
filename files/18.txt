@@ -1,0 +1,4 @@
+this
+is
+text
+file: 18.txt

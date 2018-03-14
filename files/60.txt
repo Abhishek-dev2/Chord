@@ -1,0 +1,4 @@
+this
+is
+text
+file: 60.txt

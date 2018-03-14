@@ -1,0 +1,4 @@
+this
+is
+text
+file: 5.txt

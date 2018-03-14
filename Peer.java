@@ -56,6 +56,16 @@ public class Peer {
     while(!fileName.equals("#*#")) {
       File file = new File("./files/" + fileName);
       file.createNewFile();
+      String line = null;
+      Writer dest = new FileWriter("./files/" + fileName);
+      while(true) {
+        line = br.readLine();
+        if(line.equals("*#*#*#*EOF*#*#*#*"))
+          break;
+        dest.write(line + "\n");
+      }
+      dest.flush();
+      dest.close();
       fileName = br.readLine();
     }
     os.close(); br.close(); getMyFilesServer.close();

@@ -1,0 +1,4 @@
+this
+is
+text
+file: 6.txt

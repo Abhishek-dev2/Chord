@@ -42,23 +42,23 @@ class ClientThread extends Thread {
       switch(request) {
         case "areYouThere":
           // System.out.println("************* YesIAmPresent *************");
-          // os.write("YesIAmPresent\n".getBytes());
-          // os.flush();
           break;
         case "giveMyFiles":
           int yourKey = Integer.parseInt(br.readLine());
           File[] listOfFiles = (new File("./files")).listFiles();
-          try {
-            for (int i = 0; i < listOfFiles.length; i++) {
-              int x = ObtainSHA.SHA1(listOfFiles[i].getName());
-              if(yourKey == RowInFingerTable.clockwiseClosest(x, yourKey, Peer.myKey)) {
-                os.write((listOfFiles[i].getName() + "\n").getBytes());
-                os.flush();
-                listOfFiles[i].delete();
-              }
+          for (int i = 0; i < listOfFiles.length; i++) {
+            int x = ObtainSHA.SHA1(listOfFiles[i].getName());
+            if(yourKey == RowInFingerTable.clockwiseClosest(x, yourKey, Peer.myKey)) {
+              os.write((listOfFiles[i].getName() + "\n").getBytes());
+              os.flush();
+              BufferedReader fileBR = new BufferedReader(new FileReader(listOfFiles[i]));
+              String line = null;
+              while ((line = fileBR.readLine()) != null)
+                os.write((line + "\n").getBytes());
+              os.write("*#*#*#*EOF*#*#*#*\n".getBytes());
+              os.flush();
+              listOfFiles[i].delete();
             }
-          } catch(Exception ex) {
-            ex.printStackTrace();
           }
           os.write("#*#\n".getBytes());
           os.flush();
@@ -68,7 +68,8 @@ class ClientThread extends Thread {
           if(checkFileInMyFingerTable(fileKey)) {
             os.write((sendFileAddress(fileKey) + "\n").getBytes());
             os.flush();
-          } else {
+          }
+          else {
             String Addr = sendFileAddress(fileKey);
             // System.out.println("######################## " + Addr + " ###########################");
             String[] temp = Addr.split(":");
@@ -111,8 +112,6 @@ class ClientThread extends Thread {
             Peer.successorIPAdress[2] = Peer.successorIPAdress[1]; Peer.successorPort[2] = Peer.successorPort[1];
             Peer.successorIPAdress[num] = temp[0]; Peer.successorPort[num] = Integer.parseInt(temp[1]);
           }
-          // if(num == 1)
-          //   Peer.successorIPAdress[2] = Peer.successorIPAdress[1]; Peer.successorPort[2] = Peer.successorPort[1];
           newPeerIP = br.readLine();
           temp = newPeerIP.split(":");
           newPeerKey = ObtainSHA.SHA1(newPeerIP);
@@ -132,7 +131,7 @@ class ClientThread extends Thread {
             os1.close(); updatePredecessorServer.close();
           }
           break;
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+          ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         case "UpdatePredecessorMySuccessorIsDead":
           String deadPeerReplacementSuccessorIP = br.readLine(); //
           temp = deadPeerReplacementSuccessorIP.split(":");
@@ -147,7 +146,6 @@ class ClientThread extends Thread {
           }
           Peer.successorIPAdress[1] = Peer.successorIPAdress[2]; Peer.successorPort[1] = Peer.successorPort[2];
           Peer.successorIPAdress[2] = temp[0]; Peer.successorPort[2] = Integer.parseInt(temp[1]);
-          // int deadPeerReplacementSuccessorKey = ObtainSHA.SHA1(deadPeerReplacementSuccessorIP);
           temp = Peer.predecessor.split(":");
           updatePredecessorServer = new Socket(InetAddress.getByName(temp[0]), Integer.parseInt(temp[1]));
           os1 = updatePredecessorServer.getOutputStream();
