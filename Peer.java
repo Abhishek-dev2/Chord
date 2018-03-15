@@ -152,11 +152,11 @@ public class Peer {
         break;
       case "n":
         firstNode = false;
-        // System.out.print("I need a IP Address and port of a peer(node) already running.\nPeer IP Address: ");
-        // peerIPAdress = sc.nextLine();
+        System.out.print("I need a IP Address and port of a peer(node) already running.\nPeer IP Address: ");
+        peerIPAdress = sc.nextLine();
         System.out.print("Peer Port: ");
         peerPort = sc.nextInt();
-        peerIPAdress = InetAddress.getLocalHost().getHostAddress().toString();
+        // peerIPAdress = InetAddress.getLocalHost().getHostAddress().toString();
         // peerPort = 1234;
         myPort = rand.nextInt(65536);
         if(myPort <= 1024)
