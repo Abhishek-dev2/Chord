@@ -1,2 +1,2 @@
-# Chord
-Chord based P2P Protocol
+# Chord 
+Chord based peer-to-peer Protocol
